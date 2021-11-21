@@ -31,7 +31,6 @@ const App = () => {
           <Navigation />
           <main className="main-content">
             <Switch>
-              {!token && <Redirect from="/" to="/auth" exact />}
               {token && <Redirect from="/" to="/events" exact />}
               {token && <Redirect from="/auth" to="/events" exact />}
               <Route path="/auth">
@@ -39,6 +38,7 @@ const App = () => {
               </Route>
               <Route path="/events" component={Events} />
               {token && <Route path="/bookings" component={Bookings} />}
+              {!token && <Redirect to="/auth" exact />}
             </Switch>
           </main>
         </AuthContext.Provider>
