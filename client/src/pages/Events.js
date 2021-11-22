@@ -42,8 +42,8 @@ const Events = () => {
 
     const requestBody = {
       query: `
-                mutation {
-                  createEvent(eventInput: {title: "${title}", description: "${description}", price: ${price}, date: "${date}"}) {
+                mutation CreateEvent($title: String!, $price: Float!, $date: String!, $description: String!) {
+                  createEvent(eventInput: {title: $title, description: $description, price: $price, date: $date}) {
                     _id
                     title
                     description
@@ -52,6 +52,12 @@ const Events = () => {
                   }
                 }
               `,
+              variables: {
+                title: title,
+                description: description,
+                price: price,
+                date: date
+              }
     };
 
     fetch("http://localhost:4000/graphql", {
@@ -152,7 +158,48 @@ const Events = () => {
     });
   };
 
-  const bookEventHandler = () => {};
+  const bookEventHandler = () => {
+    if(!token) {
+      setSelectedEvent(null);
+      return;
+    }
+    const requestBody = {
+      query: `
+              mutation BookEvent($id: ID!){
+                bookEvent(eventId: $id) {
+                  _id
+                  createdAt
+                  updatedAt
+                }
+              }
+            `,
+            variables: {
+              id: selectedEvent._id
+            }
+    };
+
+    fetch("http://localhost:4000/graphql", {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      },
+    })
+      .then((res) => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed!");
+        }
+        return res.json();
+      })
+      .then((resData) => {
+        console.log(resData);
+        setSelectedEvent(null)
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   return (
     <React.Fragment>
@@ -193,7 +240,7 @@ const Events = () => {
             canConfirm
             onCancel={modalCancelHandler}
             onConfirm={bookEventHandler}
-            confirmText="Book"
+            confirmText={token ? 'Book' : 'Confirm'}
           >
             <h1>{selectedEvent.title}</h1>
             <h2>
