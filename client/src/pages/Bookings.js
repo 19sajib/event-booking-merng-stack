@@ -3,12 +3,15 @@ import BookingList from '../components/Bookings/BookingList/BookingList';
 
 import Spinner from "../components/Spinner/Spinner";
 import AuthContext from "../context/auth-context";
+import BookingsChart from '../components/Bookings/BookingsChart/BookingsChart';
+import BookingsControls from '../components/Bookings/BookingsControls/BookingsControls';
 
 
 const Bookings = () => {
     const { token, userId } = useContext(AuthContext);
     const [bookings, setBookings] = React.useState([])
     const [isLoading, setIsLoading] = React.useState(false)
+    const [outputType, setOutputType] = React.useState('list')
 
 
     const fetchBookings = () => {
@@ -23,6 +26,7 @@ const Bookings = () => {
                    _id
                    title
                    date
+                   price
                  }
                 }
               }
@@ -102,14 +106,38 @@ const Bookings = () => {
         console.log(err);
         setIsLoading(false)
       });
-      }  
+      }
+    
+    const   changeOutputTypeHandler = outputType => {
+      if (outputType === 'list') {
+        setOutputType('list')
+      } else {
+        setOutputType('chart')
+      }
+    };
 
     return (
         <React.Fragment>
         {isLoading ? (
           <Spinner />
         ) : (
-          <BookingList bookings={bookings} onDelete={deleteBookingHandler} />
+          <React.Fragment>
+              <BookingsControls
+                activeOutputType={outputType}
+                onChange={changeOutputTypeHandler}
+              />
+              <div>
+                {outputType === 'list' ? (
+                  <BookingList
+                    bookings={bookings}
+                    onDelete={deleteBookingHandler}
+                  />
+                ) : (
+                  <BookingsChart bookings={bookings} />
+                )}
+              </div>
+            </React.Fragment>
+        
         )}
       </React.Fragment>
     )
